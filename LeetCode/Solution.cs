@@ -91,6 +91,66 @@ namespace LeetCode
             return longest;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nums1"></param>
+        /// <param name="nums2"></param>
+        /// <returns></returns>
+        public double FindMedianSortedArrays(int[] nums1, int[] nums2)
+        {
+            int lo1 = 0, hi1 = nums1.Length, lo2 = 0, hi2 = nums2.Length;
+            double median1 = Median(nums1,lo1,hi1), median2 = Median(nums2,lo2,hi2);
+
+            while(true)
+            {
+                if(median1 < median2)
+                {
+                    lo1 = (hi1 + lo1) >> 1;
+                    hi2 = (hi2 + lo2) >> 1;
+                }
+                else
+                {
+                    hi1 = (hi1 + lo1) >> 1;
+                    lo2 = (hi2 + lo2) >> 1;
+                }
+                median1 = Median(nums1, lo1, hi1);
+                median2 = Median(nums2, lo2, hi2);
+            }
+
+        }
+
+        /// <summary>
+        /// Find the Median of an array in range of [lo,hi)
+        /// </summary>
+        /// <param name="nums"></param>
+        /// <param name=""></param>
+        /// <param name=""></param>
+        /// <returns></returns>
+        double Median(int[] nums, int lo, int hi) =>
+            (hi - lo) % 2 == 0 ? (nums[lo + ((hi - lo) >> 1) - 1] + nums[lo + ((hi - lo) >> 1)]) / 2.0 : nums[lo + (hi - lo) >> 1];
+
+        /// <summary>
+        ///  number of elements no greater than target
+        /// </summary>
+        /// <param name="nums"></param>
+        /// <param name="target"></param>
+        /// 
+        /// <returns></returns>
+        protected int N_LE(int[] nums, int left, int right, double target)
+        {
+            
+            int mid;
+            while (left < right)
+            {
+                mid = (left + right) >> 1;
+                if (target < nums[mid])
+                    right = mid;
+                else
+                    left = mid + 1;
+            }
+            return left;
+        }
 
         /// <summary>
         /// Longest Palindromic Substring
@@ -238,6 +298,7 @@ namespace LeetCode
 
         int BinSearch4ThreeSum(int[] s, int start, ref int end, int target)
         {
+            int lo = start;
             while (start < end)
             {
                 int mid = (start + end) >> 1;
@@ -246,7 +307,217 @@ namespace LeetCode
                 else
                     start = mid + 1; // [0, start) is not greater than target
             }
-            return end>start && s[end - 1] == target ? end-1 : -1;
+            return end>lo && s[end - 1] == target ? end-1 : -1;
         }
+
+        public IList<IList<int>> ThreeSum_hash(int[] nums)
+        {
+            var ans = new List<IList<int>>();
+            Array.Sort(nums);
+            var hashSet = new Dictionary<int, int>();
+            for (int i = 0; i < nums.Length; i++)
+                if (!hashSet.ContainsKey(nums[i]))
+                    hashSet.Add(nums[i], i);
+            for (int i = 0; i < nums.Length - 2; i++)
+            {
+                if (nums[i] > 0)
+                    break;
+                if (i > 0 && nums[i] == nums[i - 1])
+                    continue;
+                for (int j = i + 1; j < nums.Length - 1; j++)
+                {
+                    if (nums[i] + nums[j] > 0)
+                        break;
+                    if (j > i + 1 && nums[j] == nums[j - 1])
+                        continue;
+                    if (hashSet.ContainsKey(-nums[i] - nums[j]))
+                    {
+                        if (hashSet[-nums[i] - nums[j]] > j)
+                            ans.Add(new int[] { nums[i], nums[j], nums[hashSet[-nums[i] - nums[j]]] });
+                        else if (-nums[i] - nums[j] == nums[j] && nums[j] == nums[j + 1])
+                            ans.Add(new int[] { nums[i], nums[j], nums[j + 1] });
+                    }
+                    
+                }
+            }
+            return ans;
+        }
+
+        public int ThreeSumClosest(int[] nums, int target)
+        {
+            Array.Sort(nums);
+            int ans = nums[0] + nums[1] + nums[2];
+            for (int i = 0; i < nums.Length - 2; i++)
+            {
+                if (i > 0 && nums[i] == nums[i - 1])
+                    continue;
+
+                int j = i + 1, k = nums.Length - 1;
+                while (j < k)
+                {
+                    
+                    int diff = nums[i] + nums[j] + nums[k] - target;
+                    if (Math.Abs(target - ans) > Math.Abs(diff))
+                        ans = target + diff;
+                    if (diff == 0)
+                        return ans;
+                    else if (diff > 0)
+                        k--;
+                    else
+                        j++;
+                }
+            }
+            return ans;
+        }
+
+        public IList<string> LetterCombinations(string digits)
+        {
+            var ans = new List<String>();
+            int len = digits.Length;
+            if (len == 0)
+                return ans;
+            string[] letters = new string[len];
+            for (int i = 0; i < len; i++)
+            {
+                switch (digits[i])
+                {
+                    case '2':
+                        letters[i] = "abc";
+                        break;
+                    case '3':
+                        letters[i] = "def";
+                        break;
+                    case '4':
+                        letters[i] = "ghi";
+                        break;
+                    case '5':
+                        letters[i] = "jkl";
+                        break;
+                    case '6':
+                        letters[i] = "mno";
+                        break;
+                    case '7':
+                        letters[i] = "pqrs";
+                        break;
+                    case '8':
+                        letters[i] = "tuv";
+                        break;
+                    case '9':
+                        letters[i] = "wxyz";
+                        break;
+                    default:
+                        return ans;
+                }
+            }
+            int maxCode = 0b100 << ((len - 1) << 1);
+            StringBuilder sb = new();
+            for (int code = 0b0; code < maxCode; code++)
+            {
+                sb.Clear();
+                int loc = 0b11, i;
+                for (i = 0; i < len; i++)
+                {
+                    int index = (loc & code) >> (i<<1);
+                    if (index < letters[i].Length)
+                        sb.Append(letters[i][index]);
+                    else
+                        break;
+                    loc <<= 2;
+                }
+                if (i == len)
+                    ans.Add(sb.ToString());
+            }
+            return ans;
+        }
+
+        public IList<IList<int>> FourSum(int[] nums, int target) =>
+            NSum(nums, target, 4);
+
+        public IList<IList<int>> NSum(int[] nums, int target, int n)
+        {
+            Dictionary<int, int> hashset = new();
+            if (n < 2)
+            {
+                throw new ArgumentOutOfRangeException("n is too small");
+            }
+            else if (n > 2)
+            {
+                Array.Sort(nums);
+            }
+            for(int i = 0; i<nums.Length; i++)
+            {
+                if(!hashset.ContainsKey(nums[i]))
+                    hashset.Add(nums[i], i);
+            }
+            return NSum(nums, target, n, hashset, -1);
+
+        }
+
+        List<IList<int>> NSum(int[] nums, int target, int n, Dictionary<int, int> hashSet, int ThirdLargest)
+        {
+            List<IList<int>> ans = new();
+            if (n == 2)
+            {
+
+                for (int i = ThirdLargest + 1; i < nums.Length-1; i++)
+                {
+                    if (hashSet.ContainsKey(target - nums[i]) && hashSet[target - nums[i]] > i)
+                    {
+                        var newAns = new List<int>() { target - nums[i], nums[i] };
+                        ans.Add(newAns);
+                    }
+                    else if(nums[i]+nums[i+1] == target)
+                    {
+                        var newAns = new List<int>() { nums[i+1], nums[i] };
+                        ans.Add(newAns);
+                    }
+                }
+                return ans;
+            }
+            else if (n > 2)
+            {
+                List<IList<int>> newans = new();
+                for (int i = ThirdLargest + 1; i < nums.Length; i++)
+                {
+                    newans = NSum(nums, target-nums[i], n - 1, hashSet, i);
+                    foreach (IList<int> a in newans)
+                        a.Add(nums[i]);
+                    ans.AddRange(newans);
+                }
+                return ans;
+            }
+            else
+                throw new ArgumentException();
+
+        }
+
+        public ListNode RemoveNthFromEnd(ListNode head, int n)
+        {
+            var originalHead = head;
+            ListNode[] queue = new ListNode[n+1];
+            int next = 0, count = 0;
+            do
+            {
+                queue[next++] = head;
+                count++;
+                if (next == n)
+                    next = 0;
+            } while ((head = head.next) != null);
+            // queue[next] will be kept. queue[next+1] will be deleted
+            if(count < n)
+                throw new ArgumentException();
+            if(count == n)
+                originalHead = originalHead.next;
+            else
+            {
+                if (next +2 < n)
+                    queue[next].next = queue[next + 2];
+                else
+                    queue[next].next = queue[(next + 2)-n];
+            }
+            return originalHead;
+        }
+
+
     }
 }
