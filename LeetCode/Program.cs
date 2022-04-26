@@ -1,7 +1,11 @@
 ﻿using LeetCode;
 
-int[] a = new int[] { 1, 0, -1, 0, -2, 2 };
-int[] b = new int[] { 2 };
-Console.WriteLine((new Solution()).NSum(a,0,4));
+int[] a = new int[] { 2,2,2,2,2 };
+int[] b = new int[7] ;
+int[][] c = new int[1][];
+c[0] = new int[] { 2,2,1 };
+
+
+Console.WriteLine((new Solution()).Divide(int.MinValue,-1));
 
 

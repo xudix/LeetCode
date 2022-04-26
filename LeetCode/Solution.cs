@@ -100,11 +100,11 @@ namespace LeetCode
         public double FindMedianSortedArrays(int[] nums1, int[] nums2)
         {
             int lo1 = 0, hi1 = nums1.Length, lo2 = 0, hi2 = nums2.Length;
-            double median1 = Median(nums1,lo1,hi1), median2 = Median(nums2,lo2,hi2);
+            double median1 = Median(nums1, lo1, hi1), median2 = Median(nums2, lo2, hi2);
 
-            while(true)
+            while (true)
             {
-                if(median1 < median2)
+                if (median1 < median2)
                 {
                     lo1 = (hi1 + lo1) >> 1;
                     hi2 = (hi2 + lo2) >> 1;
@@ -139,7 +139,7 @@ namespace LeetCode
         /// <returns></returns>
         protected int N_LE(int[] nums, int left, int right, double target)
         {
-            
+
             int mid;
             while (left < right)
             {
@@ -213,7 +213,7 @@ namespace LeetCode
                     ans.Append("CM");
                     break;
                 case 8 or 7 or 6 or 5:
-                ans.Append('D');
+                    ans.Append('D');
                     for (int i = 0; i < (num / 100) % 10 - 5; i++)
                         ans.Append('C');
                     break;
@@ -221,7 +221,7 @@ namespace LeetCode
                     ans.Append("CD");
                     break;
                 case 3 or 2 or 1:
-                for (int i = 0; i < (num / 100) % 10; i++)
+                    for (int i = 0; i < (num / 100) % 10; i++)
                         ans.Append('C');
                     break;
                 default:
@@ -307,7 +307,7 @@ namespace LeetCode
                 else
                     start = mid + 1; // [0, start) is not greater than target
             }
-            return end>lo && s[end - 1] == target ? end-1 : -1;
+            return end > lo && s[end - 1] == target ? end - 1 : -1;
         }
 
         public IList<IList<int>> ThreeSum_hash(int[] nums)
@@ -337,7 +337,7 @@ namespace LeetCode
                         else if (-nums[i] - nums[j] == nums[j] && nums[j] == nums[j + 1])
                             ans.Add(new int[] { nums[i], nums[j], nums[j + 1] });
                     }
-                    
+
                 }
             }
             return ans;
@@ -355,7 +355,7 @@ namespace LeetCode
                 int j = i + 1, k = nums.Length - 1;
                 while (j < k)
                 {
-                    
+
                     int diff = nums[i] + nums[j] + nums[k] - target;
                     if (Math.Abs(target - ans) > Math.Abs(diff))
                         ans = target + diff;
@@ -417,7 +417,7 @@ namespace LeetCode
                 int loc = 0b11, i;
                 for (i = 0; i < len; i++)
                 {
-                    int index = (loc & code) >> (i<<1);
+                    int index = (loc & code) >> (i << 1);
                     if (index < letters[i].Length)
                         sb.Append(letters[i][index]);
                     else
@@ -444,9 +444,9 @@ namespace LeetCode
             {
                 Array.Sort(nums);
             }
-            for(int i = 0; i<nums.Length; i++)
+            for (int i = nums.Length - 1; i > -1; i--)
             {
-                if(!hashset.ContainsKey(nums[i]))
+                if (!hashset.ContainsKey(nums[i]))
                     hashset.Add(nums[i], i);
             }
             return NSum(nums, target, n, hashset, -1);
@@ -459,16 +459,13 @@ namespace LeetCode
             if (n == 2)
             {
 
-                for (int i = ThirdLargest + 1; i < nums.Length-1; i++)
+                for (int i = ThirdLargest + 1; i < nums.Length - 1; i++)
                 {
+                    if (i > ThirdLargest + 1 && nums[i] == nums[i - 1])
+                        continue;
                     if (hashSet.ContainsKey(target - nums[i]) && hashSet[target - nums[i]] > i)
                     {
                         var newAns = new List<int>() { target - nums[i], nums[i] };
-                        ans.Add(newAns);
-                    }
-                    else if(nums[i]+nums[i+1] == target)
-                    {
-                        var newAns = new List<int>() { nums[i+1], nums[i] };
                         ans.Add(newAns);
                     }
                 }
@@ -479,7 +476,9 @@ namespace LeetCode
                 List<IList<int>> newans = new();
                 for (int i = ThirdLargest + 1; i < nums.Length; i++)
                 {
-                    newans = NSum(nums, target-nums[i], n - 1, hashSet, i);
+                    if (i > ThirdLargest + 1 && nums[i] == nums[i - 1])
+                        continue;
+                    newans = NSum(nums, target - nums[i], n - 1, hashSet, i);
                     foreach (IList<int> a in newans)
                         a.Add(nums[i]);
                     ans.AddRange(newans);
@@ -494,30 +493,239 @@ namespace LeetCode
         public ListNode RemoveNthFromEnd(ListNode head, int n)
         {
             var originalHead = head;
-            ListNode[] queue = new ListNode[n+1];
+            ListNode[] queue = new ListNode[n + 1];
             int next = 0, count = 0;
             do
             {
                 queue[next++] = head;
                 count++;
-                if (next == n)
+                if (next == n + 1)
                     next = 0;
             } while ((head = head.next) != null);
             // queue[next] will be kept. queue[next+1] will be deleted
-            if(count < n)
+            if (count < n)
                 throw new ArgumentException();
-            if(count == n)
+            if (count == n)
                 originalHead = originalHead.next;
             else
             {
-                if (next +2 < n)
-                    queue[next].next = queue[next + 2];
-                else
-                    queue[next].next = queue[(next + 2)-n];
+                queue[next].next = queue[next].next.next;
             }
             return originalHead;
         }
 
+        public ListNode MergeTwoLists(ListNode list1, ListNode list2)
+        {
+            var dummy = new ListNode();
+            var ans = dummy;
+            var current1 = list1;
+            var current2 = list2;
+            while (true)
+            {
+                if (current1 != null && current2 != null)
+                {
+                    if (current1.val <= current2.val)
+                    {
+                        ans.next = current1;
+                        current1 = current1.next;
+                    }
+                    else
+                    {
+                        ans.next = current2;
+                        current2 = current2.next;
+                    }
+                    ans = ans.next;
+                }
+                else if (current1 == null && current2 == null)
+                {
+                    return dummy.next;
+                }
+                else if (current1 == null)
+                {
+                    ans.next = current2;
+                    return dummy.next;
+                }
+                else
+                {
+                    ans.next = current1;
+                    return dummy.next;
+                }
+            }
 
+        }
+
+        public IList<int> Intersection(int[][] nums)
+        {
+            Array.Sort(nums[0]);
+            if (nums.Length == 1)
+            {
+                return nums[0];
+            }
+            List<int> ans = new();
+            HashSet<int>[] hashSets = new HashSet<int>[nums.Length - 1];
+            for (int i = 1; i < nums.Length; i++)
+            {
+                hashSets[i] = new HashSet<int>();
+                for (int j = 0; j < nums[i].Length; j++)
+                    hashSets[i].Add(nums[i][j]);
+            }
+            foreach (int a in nums[0])
+            {
+                bool present = true;
+                for (int i = 1; i < nums.Length; i++)
+                {
+                    if (!hashSets[i].Contains(a))
+                        present = false;
+                }
+                if (present)
+                    ans.Add(a);
+
+            }
+            return ans;
+        }
+
+        public int CountLatticePoints(int[][] circles)
+        {
+            int minx = 100, miny = 100, maxx = 0, maxy = 0;
+            for (int i = 0; i < circles.Length; i++)
+            {
+                if (circles[i][0] + circles[i][2] > maxx)
+                {
+                    maxx = circles[i][0] + circles[i][2];
+                }
+                if (circles[i][0] - circles[i][2] < minx)
+                {
+                    minx = circles[i][0] - circles[i][2];
+                }
+                if (circles[i][1] + circles[i][2] > maxy)
+                {
+                    maxy = circles[i][1] + circles[i][2];
+                }
+                if (circles[i][1] - circles[i][2] < miny)
+                {
+                    miny = circles[i][1] - circles[i][2];
+                }
+            }
+            int output = 0;
+            for (int x = minx; x <= maxx; x++)
+            {
+                for (int y = miny; y <= maxy; y++)
+                {
+                    for (int i = 0; i < circles.Length; i++)
+                    {
+                        if (IsInCircle(circles[i], x, y))
+                        {
+                            output++;
+                            break;
+                        }
+                    }
+                }
+            }
+            return output;
+        }
+
+        bool IsInCircle(int[] circle, int x, int y) =>
+            (x - circle[0]) * (x - circle[0]) + (y - circle[1]) * (y - circle[1]) - circle[2] * circle[2] <= 0;
+
+        public IList<string> GenerateParenthesis(int n)
+        {
+            List<string> result = new List<string>();
+            char[] stack = new char[n << 1];
+            int cursor = 1;
+            int nLeft = 1, nRight = 0;
+            stack[0] = '(';
+            while (cursor > -1)
+            {
+                // try to add a new char
+                if (stack[cursor] == '\0')
+                {
+                    if (nLeft < n)
+                    {
+                        stack[cursor] = '(';
+                        cursor++;
+                        nLeft++;
+                    }
+                    else if (nRight < n)
+                    {
+                        stack[cursor] = ')';
+                        cursor++;
+                        nRight++;
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+                else if (stack[cursor] == '(' && nLeft - 1 > nRight)
+                {
+                    stack[cursor] = ')';
+                    nLeft--;
+                    nRight++;
+                    cursor++;
+                }
+                else
+                {
+                    if (stack[cursor] == '(')
+                        nLeft--;
+                    else
+                        nRight--;
+                    stack[cursor] = '\0';
+                    cursor--;
+                }
+                if (cursor == stack.Length)
+                {
+                    result.Add(new string(stack));
+                    stack[--cursor] = '\0';
+                    nRight--;
+                    cursor--;
+                }
+
+            }
+            return result;
+        }
+
+        public int Divide(int dividend, int divisor)
+        {
+            bool negative = false;
+            uint udividend, udivisor;
+            if (dividend == int.MinValue)
+            {
+                udividend = (uint)int.MaxValue + 1;
+                negative = !negative;
+            }
+            else if (dividend < 0)
+            {
+                negative = !negative;
+                udividend = (uint)-dividend;
+            }
+            else
+                udividend = (uint)dividend;
+            if (divisor == int.MinValue)
+            {
+                return dividend == int.MinValue ? 1 : 0;
+            }
+            else if (divisor < 0)
+            {
+                negative = !negative;
+                udivisor = (uint)-divisor;
+            }
+            else
+                udivisor = (uint)divisor;
+            uint originalDivisor = udivisor;
+            uint result = 0;
+            while (udivisor <= (udividend >> 1))
+                udivisor <<= 1;
+            while (udivisor >= originalDivisor)
+            {
+                result <<= 1;
+                if (udividend >= udivisor)
+                {
+                    udividend -= udivisor;
+                    result++;
+                }
+                udivisor >>= 1;
+            }
+            return negative ? (int)-result : result <= int.MaxValue ? (int)result : int.MaxValue;
+        }
     }
 }
