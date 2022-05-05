@@ -99,25 +99,34 @@ namespace LeetCode
         /// <returns></returns>
         public double FindMedianSortedArrays(int[] nums1, int[] nums2)
         {
-            int lo1 = 0, hi1 = nums1.Length, lo2 = 0, hi2 = nums2.Length;
-            double median1 = Median(nums1, lo1, hi1), median2 = Median(nums2, lo2, hi2);
+            if (nums1.Length < nums2.Length)
+                return FindMedianSortedArrays(nums2, nums1);
 
+            int half = (nums1.Length + nums2.Length + 1) >> 1;
+            if (nums2.Length == 0)
+                return ((double)nums1[nums1.Length >> 1] + (double)nums1[(nums1.Length - 1) >> 1]) / 2;
+            int l = half-nums2.Length, r = half;
+            int c1, c2, a, b, c, d;
             while (true)
             {
-                if (median1 < median2)
-                {
-                    lo1 = (hi1 + lo1) >> 1;
-                    hi2 = (hi2 + lo2) >> 1;
-                }
+                c1 = (l + r) >> 1;
+                c2 = half - c1;
+                a = c1 > 0 ? nums1[c1 - 1] : int.MinValue;
+                b = c1 < nums1.Length ? nums1[c1] : int.MaxValue;
+                c = c2 > 0 ? nums2[c2 - 1] : int.MinValue;
+                d = c2 < nums2.Length ? nums2[c2] : int.MaxValue;
+                if (a <= d && c <= b) // currect cut
+                    break;
+                else if (a > d)
+                    r = c1;
                 else
-                {
-                    hi1 = (hi1 + lo1) >> 1;
-                    lo2 = (hi2 + lo2) >> 1;
-                }
-                median1 = Median(nums1, lo1, hi1);
-                median2 = Median(nums2, lo2, hi2);
-            }
+                    l = c1 + 1;
 
+            }
+            if (((nums1.Length + nums2.Length) >> 1) << 1 == (nums1.Length + nums2.Length))
+                return ((double)Math.Max(a, c) + (double)Math.Min(b, d)) / 2;
+            else
+                return (double)Math.Max(a, c);
         }
 
         /// <summary>
@@ -726,6 +735,179 @@ namespace LeetCode
                 udivisor >>= 1;
             }
             return negative ? (int)-result : result <= int.MaxValue ? (int)result : int.MaxValue;
+        }
+
+        public int[] CountRectangles(int[][] rectangles, int[][] points)
+        {
+            int[] ans = new int[points.Length];
+            List<int>[] map = new List<int>[101];
+            for (int i = 0; i < rectangles.Length; i++)
+            {
+                if (map[rectangles[i][1]] == null)
+                    map[rectangles[i][1]] = new List<int>();
+                map[rectangles[i][1]].Add(rectangles[i][0]);
+            }
+            for (int i = 1; i <= 100; i++)
+                if (map[i] != null)
+                    map[i].Sort();
+
+            for (int pointIndex = 0; pointIndex < points.Length; pointIndex++)
+            {
+                for (int h = points[pointIndex][1]; h <= 100; h++)
+                    if (map[h] != null)
+                        ans[pointIndex] += N_GET(map[h], points[pointIndex][0]);
+            }
+            return ans;
+        }
+
+        static int N_GET(List<int> nums, int target)
+        { // returns the number of elements no less than target in sorted 
+            int lo = 0, hi = nums.Count;
+            int mid;
+            while (lo < hi)
+            {
+                mid = (lo + hi) >> 1;
+                if (target <= nums[mid])
+                    hi = mid;
+                else
+                    lo = mid + 1;
+            }
+            return lo;
+        }
+
+        public bool BackspaceCompare(string s, string t)
+        {
+            int i = s.Length - 1, j = t.Length - 1;
+            char next_s, next_t;
+            int sharp_s = 0, sharp_t = 0;
+            while (i > -1 || j > -1)
+            {
+                while (i > -1 && (s[i] == '#' || sharp_s > 0))
+                {
+                    if (s[i] == '#')
+                    {
+                        sharp_s++;
+                    }
+                    else
+                    {
+                        sharp_s--;
+                    }
+                    i--;
+                }
+                while (j > -1 && (t[j] == '#' || sharp_t > 0))
+                {
+                    if (t   [j] == '#')
+                    {
+                        sharp_t++;
+                    }
+                    else
+                    {
+                        sharp_t--;
+                    }
+                    j--;
+                }
+                if (i < 0 || j < 0)
+                    break;
+                if (s[i--] != t[j--])
+                    return false;
+            }
+            return i == j;
+        }
+
+        public int MaxOperations(int[] nums, int k)
+        {
+            int ans = 0;
+            Dictionary<int, List<int>> dict = new();
+            for (int i = 0; i < nums.Length; i++)
+            {
+                if (!dict.ContainsKey(nums[i]))
+                    dict.Add(nums[i], new List<int>());
+                dict[nums[i]].Add(i);
+            }
+            for (int i = 0; i < nums.Length; i++)
+            {
+                if (dict.ContainsKey(k - nums[i]))
+                {
+                    int count = dict[k - nums[i]].Count;
+                    if (count > 0 && dict[k - nums[i]][count - 1] > i)
+                    {
+                        ans++;
+                        dict[k - nums[i]].RemoveAt(count - 1);
+                        if (count == 1)
+                            dict.Remove(k - nums[i]);
+                        nums[i] = int.MaxValue;
+                    }
+                }
+            }
+            return ans;
+        }
+        /// <summary>
+        /// 30. Substring with Concatenation of All Words
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="words"></param>
+        /// <returns></returns>
+        public IList<int> FindSubstring(string s, string[] words)
+        {
+            int wordLength = words[0].Length;
+            List<int> ans = new();
+            Dictionary<string, int> wordsSet = new();
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (!wordsSet.ContainsKey(words[i]))
+                    wordsSet.Add(words[i], 1);
+                else
+                    wordsSet[words[i]]++;
+            }
+
+            Dictionary<string, int> found = new();
+            
+            string current;
+            int foundCount = 0;
+            for (int i = 0; i <= s.Length - wordLength*words.Length; i++)
+            {
+                int c = i;
+                do
+                {
+                    current = s[c..(c + wordLength)];
+                    if (wordsSet.ContainsKey(current))
+                    {
+                        foundCount++;
+                        if (found.ContainsKey(current))
+                        {
+                            if (found[current] < wordsSet[current])
+                            {
+                                found[current]++;
+                                if (foundCount == words.Length)
+                                {
+                                    foundCount = 0;
+                                    found.Clear();
+                                    ans.Add(i);
+                                    break;
+                                }
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            found.Add(current, 1);
+                            if (foundCount == words.Length)
+                            {
+                                foundCount = 0;
+                                found.Clear();
+                                ans.Add(i);
+                                break;
+                            }
+                            continue;
+                        }
+                    }
+                    foundCount = 0;
+                    found.Clear();
+                    break;
+                } while ((c+=wordLength) <= s.Length - wordLength);
+
+            }
+            return ans;
         }
     }
 }
